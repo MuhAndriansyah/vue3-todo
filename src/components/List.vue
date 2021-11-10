@@ -45,15 +45,16 @@ export default {
       default: [],
     },
   },
+  setup(props, { emit }) {
+    const deleteTodo = (id) => {
+      emit("deleteTodo", id);
+    };
 
-  methods: {
-    deleteTodo(id) {
-      this.$emit("deleteTodo", id);
-    },
+    const doneTodo = (id) => {
+      emit("doneTodo", id);
+    };
 
-    doneTodo(id) {
-      this.$emit("doneTodo", id);
-    },
+    return { deleteTodo, doneTodo };
   },
 };
 </script>

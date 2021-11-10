@@ -2,7 +2,7 @@
   <div class="container">
     <div class="card">
       <div class="card-body">
-        <div class="card-title">TODO VUE 3 | OPTIONS API</div>
+        <div class="card-title">TODO VUE 3 | Composition API</div>
         <div class="row">
           <div class="col-10">
             <input
@@ -21,68 +21,79 @@
         </div>
       </div>
     </div>
-    <List :todos="todos" @deleteTodo="hapusTodo" @doneTodo="selesaikanTodo" />
+    <List :todos="list" @deleteTodo="hapusTodo" @doneTodo="selesaikanTodo" />
   </div>
 </template>
 
 
 <script>
+import { ref, reactive, toRefs, onMounted } from "vue";
+import { useToast } from "vue-toastification";
+
 import List from "./components/List.vue";
 
 export default {
   components: {
     List,
   },
-  data() {
-    return {
-      todo: "",
-      todos: [],
-    };
-  },
-  mounted() {
-    this.todos = JSON.parse(localStorage.getItem("todos")) ?? [];
-  },
-  methods: {
-    addTodo() {
-      if (this.todo) {
-        this.todos.unshift({
-          activity: this.todo,
+  setup() {
+    const todo = ref("");
+    const todos = reactive({
+      list: [],
+    });
+    const toast = useToast();
+
+    onMounted(() => {
+      todos.list = JSON.parse(localStorage.getItem("todos")) ?? [];
+    });
+
+    const addTodo = () => {
+      if (todo.value) {
+        todos.list.unshift({
+          activity: todo.value,
           isDone: false,
         });
+        toast.success("Todo berhasil ditambah");
       } else {
-        this.$toast.error("Field wajib diisi", {
-          type: "error",
+        toast.error("Field wajib diisi", {
           position: "top-right",
-          duration: 1000,
+          timeout: 1000,
         });
       }
 
-      this.todo = "";
-      this.saveToLocalStorage();
-    },
-    hapusTodo(todoIndex) {
-      this.todos = this.todos.filter((item, index) => {
+      todo.value = "";
+      saveToLocalStorage();
+    };
+
+    const hapusTodo = (todoIndex) => {
+      todos.list = todos.list.filter((item, index) => {
         if (index != todoIndex) {
           return item;
         }
       });
-      this.saveToLocalStorage();
-    },
-    selesaikanTodo(todoIndex) {
-      this.todos = this.todos.filter((item, index) => {
-        if (index == todoIndex && !item.isDone) {
+
+      saveToLocalStorage();
+    };
+
+    const selesaikanTodo = (todoIndex) => {
+      todos.lists = todos.list.filter((item, index) => {
+        if (index === todoIndex && !item.isDone) {
           item.isDone = true;
-        } else if (index == todoIndex && item.isDone) {
+        } else if (index === todoIndex && item.isDone) {
           item.isDone = false;
         }
+
         return item;
       });
-      this.saveToLocalStorage();
-    },
 
-    saveToLocalStorage() {
-      localStorage.setItem("todos", JSON.stringify(this.todos));
-    },
+      saveToLocalStorage();
+    };
+
+    const saveToLocalStorage = () => {
+      localStorage.setItem("todos", JSON.stringify(todos.list));
+    };
+
+    return { todo, ...toRefs(todos), addTodo, hapusTodo, selesaikanTodo };
   },
 };
 </script>
